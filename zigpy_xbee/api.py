@@ -13,7 +13,7 @@ COMMANDS = {
     'queued_at': (0x09, (), None),
     'remote_at': (0x17, (), None),
     'tx': (0x10, (), None),
-    'tx_explicit': (0x11, (t.uint8_t, t.EUI64, t.uint16_t, t.uint8_t, t.uint8_t, t.uint16_t, t.uint16_t, t.uint8_t, t.uint8_t, t.Bytes), None),
+    'tx_explicit': (0x11, (t.uint8_t, t.EUI64, t.uint16_t, t.uint8_t, t.uint8_t, t.uint16_t, t.uint16_t, t.uint8_t, t.uint8_t, t.Bytes), 0x8B),
     'create_source_route': (0x21, (), None),
     'register_joining_device': (0x24, (), None),
 
@@ -231,6 +231,12 @@ class XBee:
 
     def _handle_tx_status(self, data):
         LOGGER.debug("tx_status: %s", data)
+        fut, = self._awaiting.pop(data[0])
+        if data[2]:
+            fut.set_exception(Exception(data[2]))
+        else:
+            fut.set_result(None)
+        return
 
     def set_application(self, app):
         self._app = app

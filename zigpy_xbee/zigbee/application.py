@@ -68,7 +68,7 @@ class ControllerApplication(zigpy.application.ControllerApplication):
         assert sequence not in self._pending
         reply_fut = asyncio.Future()
         self._pending[sequence] = reply_fut
-        self._api._seq_command(
+        await self._api._seq_command(
             'tx_explicit',
             self._device_iees_by_nwk[nwk],
             nwk,
