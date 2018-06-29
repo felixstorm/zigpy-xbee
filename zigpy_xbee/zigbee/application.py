@@ -17,7 +17,7 @@ class ControllerApplication(zigpy.application.ControllerApplication):
         api.set_application(self)
 
         self._pending = {}
-        self._devices_by_nwk = {}
+        self._device_iees_by_nwk = {}
 
         self._nwk = 0
 
@@ -68,7 +68,7 @@ class ControllerApplication(zigpy.application.ControllerApplication):
         self._pending[sequence] = reply_fut
         self._api._seq_command(
             'tx_explicit',
-            self._devices_by_nwk[nwk],
+            self._device_iees_by_nwk[nwk],
             nwk,
             src_ep,
             dst_ep,
@@ -101,7 +101,7 @@ class ControllerApplication(zigpy.application.ControllerApplication):
             # self.handle_join(src_nwk, ember_ieee, 0)  # TODO: Parent nwk
             LOGGER.warning("No such device %s", ember_ieee)
             return
-        self._devices_by_nwk[src_nwk] = src_ieee
+        self._device_iees_by_nwk[src_nwk] = src_ieee
         device = self.get_device(ember_ieee)
 
         try:
