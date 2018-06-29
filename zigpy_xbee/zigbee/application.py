@@ -98,7 +98,9 @@ class ControllerApplication(zigpy.application.ControllerApplication):
 
         ember_ieee = zigpy.types.EUI64(src_ieee)
         if ember_ieee not in self.devices:
-            self.handle_join(src_nwk, ember_ieee, 0)  # TODO: Parent nwk
+            # self.handle_join(src_nwk, ember_ieee, 0)  # TODO: Parent nwk
+            LOGGER.warning("No such device %s", ember_ieee)
+            return
         self._devices_by_nwk[src_nwk] = src_ieee
         device = self.get_device(ember_ieee)
 
