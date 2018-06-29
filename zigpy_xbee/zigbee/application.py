@@ -75,7 +75,7 @@ class ControllerApplication(zigpy.application.ControllerApplication):
             cluster,
             profile,
             0,
-            0x20,
+            0x00,
             data,
         )
         v = await asyncio.wait_for(reply_fut, timeout)
