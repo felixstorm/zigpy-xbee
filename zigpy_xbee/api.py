@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from zigpy.exceptions import DeliveryError
 from . import uart
 from . import types as t
 
@@ -232,8 +233,8 @@ class XBee:
     def _handle_tx_status(self, data):
         LOGGER.debug("tx_status: %s", data)
         fut, = self._awaiting.pop(data[0])
-        if data[2]:
-            fut.set_exception(Exception(data[2]))
+        if data[3]:
+            fut.set_exception(DeliveryError("Message send failure: delivery status = 0x%02x, retry count = %s, discovery status = 0x%02x" % (data[3], data[2], data[4])))
         else:
             fut.set_result(None)
         return
