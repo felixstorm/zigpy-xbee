@@ -12,14 +12,12 @@ LOGGER = logging.getLogger(__name__)
 
 class ControllerApplication(zigpy.application.ControllerApplication):
     def __init__(self, api, database_file=None):
+        self._device_iees_by_nwk = {}
         super().__init__(database_file=database_file)
         self._api = api
         api.set_application(self)
 
         self._pending = {}
-        self._device_iees_by_nwk = {}
-        for device in self.devices.values():
-            self._device_iees_by_nwk[device.nwk] = device.ieee
 
         self._nwk = 0
 
@@ -61,6 +59,10 @@ class ControllerApplication(zigpy.application.ControllerApplication):
         await self._api._at_command('CE', 1)
 
         self._nwk = await self._api._at_command('MY')
+
+    def add_device(self, ieee, nwk):
+        self._device_iees_by_nwk[nwk] = ieee
+        return super().add_device(ieee = ieee, nwk = nwk)
 
     @zigpy.util.retryable_request
     async def request(self, nwk, profile, cluster, src_ep, dst_ep, sequence, data, expect_reply=True, timeout=10):
