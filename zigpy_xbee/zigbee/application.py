@@ -18,6 +18,8 @@ class ControllerApplication(zigpy.application.ControllerApplication):
 
         self._pending = {}
         self._device_iees_by_nwk = {}
+        for device in self.devices.values():
+            self._device_iees_by_nwk[device.nwk] = device.ieee
 
         self._nwk = 0
 
