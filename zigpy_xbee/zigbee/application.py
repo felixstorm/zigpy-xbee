@@ -107,6 +107,10 @@ class ControllerApplication(zigpy.application.ControllerApplication):
             return
         self._device_iees_by_nwk[src_nwk] = src_ieee
         device = self.get_device(ember_ieee)
+        if device.nwk != src_nwk:
+            LOGGER.warning("Device %s changed network id (0x%04x => 0x%04x)", ember_ieee, device.nwk, src_nwk)
+            device.nwk = src_nwk
+            self.device_initialized(device)
 
         try:
             tsn, command_id, is_reply, args = self.deserialize(device, src_ep, cluster_id, data)
