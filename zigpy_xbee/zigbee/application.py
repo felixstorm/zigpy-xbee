@@ -66,7 +66,7 @@ class ControllerApplication(zigpy.application.ControllerApplication):
 
     @zigpy.util.retryable_request
     async def request(self, nwk, profile, cluster, src_ep, dst_ep, sequence, data, expect_reply=True, timeout=10):
-        LOGGER.debug("Zigbee request seq %s", sequence)
+        LOGGER.debug("Zigbee request seq %s (current seqs pending: %s)", sequence, self._pending.keys())
         assert sequence not in self._pending
         reply_fut = asyncio.Future()
         self._pending[sequence] = reply_fut
@@ -82,7 +82,16 @@ class ControllerApplication(zigpy.application.ControllerApplication):
             0x00,
             data,
         )
-        v = await asyncio.wait_for(reply_fut, timeout)
+
+        try:
+            v = await asyncio.wait_for(reply_fut, timeout)
+        except asyncio.TimeoutError:
+            LOGGER.warning("Timeout sending request with seq %s to %s / 0x%04x", sequence, self._device_iees_by_nwk[nwk], nwk)
+            self._pending.pop(sequence)
+            LOGGER.debug("Zigbee request with seq %s removed from pending due to TimeoutError (remaining: %s)", sequence, self._pending.keys())
+            raise
+        assert sequence not in self._pending
+
         return v
 
     async def permit(self, time_s=60):
@@ -128,6 +137,7 @@ class ControllerApplication(zigpy.application.ControllerApplication):
             reply_fut = self._pending[tsn]
             if reply_fut:
                 self._pending.pop(tsn)
+                LOGGER.debug("Zigbee request with seq %s removed from pending due to reply (remaining: %s)", tsn, self._pending.keys())
                 reply_fut.set_result(args)
             return
         except KeyError:
