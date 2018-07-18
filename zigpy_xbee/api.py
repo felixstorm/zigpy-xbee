@@ -239,5 +239,8 @@ class XBee:
             fut.set_result(None)
         return
 
+    def _handle_many_to_one_rri(self, data):
+        LOGGER.debug("many_to_one_rri - ignoring: %s", data)
+
     def set_application(self, app):
         self._app = app
